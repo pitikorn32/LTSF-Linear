@@ -45,6 +45,7 @@ def preprocess_multi_ts(
     # Sort the columns
     feature_cols = [target_col] + sorted(list(set(df.columns) - set(pk_cols) - set([target_col])))
     df = df[pk_cols + feature_cols].copy()
+    df[f"{target_col}_raw"] = df[target_col].copy()
 
     # Scale the features if required and save the scaler
     if scale_features:
@@ -73,7 +74,8 @@ def preprocess_multi_ts(
 
     # Filter the rows with non-zero target values if required
     if y_actual_nonzero:
-        dfx = dfx[dfx[target_col] > 0].copy()
+        dfx = dfx[dfx[f"{target_col}_raw"] > 0].copy()
+    dfx = dfx.drop(columns=[f"{target_col}_raw"]).copy()
 
     # Create the X and y arrays
     X = dfx[seq_feature_cols].to_numpy().reshape(-1, seq_len, len(feature_cols))[:, ::-1, :].copy()
